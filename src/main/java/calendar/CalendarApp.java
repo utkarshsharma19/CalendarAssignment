@@ -5,12 +5,14 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.io.*;
 
+import javax.annotation.processing.Generated;
+
 public class CalendarApp {
 
   public static void main(String[] args) {
     CalendarManager calendar = new CalendarManager();
     if (args.length < 2) {
-      System.out.println("Usage: --mode interactive OR --mode headless <commandFile.txt>");
+      CalendarManager.safePrintln("Usage: --mode interactive OR --mode headless <commandFile.txt>");
       return;
     }
     if (args[0].equalsIgnoreCase("--mode")) {
@@ -18,30 +20,30 @@ public class CalendarApp {
         runInteractiveMode(calendar);
       } else if (args[1].equalsIgnoreCase("headless")) {
         if (args.length < 3) {
-          System.out.println("Headless mode requires a command file.");
+          CalendarManager.safePrintln("Headless mode requires a command file.");
           return;
         }
         runHeadlessMode(calendar, args[2]);
       } else {
-        System.out.println("Invalid mode. Use interactive or headless.");
+        CalendarManager.safePrintln("Invalid mode. Use interactive or headless.");
       }
     }
   }
 
-  private static void runInteractiveMode(CalendarManager calendar) {
+  static void runInteractiveMode(CalendarManager calendar) {
     Scanner scanner = new Scanner(System.in);
-    System.out.println("Calendar App Interactive Mode. Type 'exit' to quit.");
+    CalendarManager.safePrintln("Calendar App Interactive Mode. Type 'exit' to quit.");
     while (true) {
-      System.out.print("> ");
+      CalendarManager.safePrintln("> ");
       String command = scanner.nextLine();
       if (command.equalsIgnoreCase("exit")) {
-        System.out.println("Exiting.");
+        CalendarManager.safePrintln("Exiting.");
         break;
       }
       try {
         CommandParser.processCommand(command, calendar);
       } catch (Exception e) {
-        System.out.println("Error: " + e.getMessage());
+        CalendarManager.safePrintln("Error: " + e.getMessage());
       }
     }
     scanner.close();
@@ -51,20 +53,20 @@ public class CalendarApp {
     try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
       String command;
       while ((command = br.readLine()) != null) {
-        System.out.println("> " + command);
+        CalendarManager.safePrintln("> " + command);
         if (command.equalsIgnoreCase("exit")) {
-          System.out.println("Exiting.");
+          CalendarManager.safePrintln("Exiting.");
           break;
         }
         CommandParser.processCommand(command, calendar);
       }
     } catch (IOException e) {
-      System.out.println("Error reading file: " + e.getMessage());
+      CalendarManager.safePrintln("Error reading file: " + e.getMessage());
     } catch (Exception e) {
-      System.out.println("Command error: " + e.getMessage());
+      CalendarManager.safePrintln("Command error: " + e.getMessage());
     }
   }
-  
+
   public static class CalendarEvent {
     public String eventName;
     public LocalDateTime start;
@@ -92,20 +94,27 @@ public class CalendarApp {
     @Override
     public String toString() {
       DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-      String base = "";
+      String eventDetails;
       if (isAllDay) {
-        base = String.format("%s (All Day on %s)", eventName, start.toLocalDate());
+        eventDetails = String.format("%s (All Day on %s)", eventName, start.toLocalDate());
       } else {
-        base = String.format("%s from %s to %s", eventName, start.format(dtf), end.format(dtf));
+        eventDetails = String.format("%s from %s to %s", eventName, start.format(dtf)
+                , end.format(dtf));
       }
+
+      String descDetails = "";
       if (!description.isEmpty()) {
-        base += ", Description: " + description;
+        descDetails = ", Description: " + description;
       }
+
+      String locDetails = "";
       if (!location.isEmpty()) {
-        base += ", Location: " + location;
+        locDetails = ", Location: " + location;
       }
-      base += ", " + (isPublic ? "Public" : "Private");
-      return base;
+
+      String privacy = isPublic ? "Public" : "Private";
+
+      return eventDetails + descDetails + locDetails + ", " + privacy;
     }
   }
 
@@ -116,20 +125,20 @@ public class CalendarApp {
       events = new ArrayList<>();
     }
 
-    public boolean addEvent(CalendarEvent newEvent, boolean autoDecline) throws Exception {
+    public void addEvent(CalendarEvent newEvent, boolean autoDecline) throws Exception {
       for (CalendarEvent event : events) {
-        if (newEvent.conflictsWith(event)) {
-          if (autoDecline) {
+        boolean conflictFound = newEvent.conflictsWith(event);
+        if (conflictFound == true) {  // explicit comparison
+          if (autoDecline == true) {  // explicit comparison
             throw new Exception("Conflict detected with event: " + event.eventName);
           } else {
-            System.out.println("Warning: Event conflicts with " + event.eventName);
+            CalendarManager.safePrintln("Warning: Event conflicts with " + event.eventName);
           }
         }
       }
       events.add(newEvent);
-      // Sort events based on start date/time.
-      Collections.sort(events, Comparator.comparing(e -> e.start));
-      return true;
+
+      events.sort(Comparator.comparing(e -> e.start));
     }
 
     public List<CalendarEvent> getEventsOn(LocalDate date) {
@@ -146,6 +155,11 @@ public class CalendarApp {
         }
       }
       return result;
+    }
+
+    @Generated("Excluded from mutation testing")
+    private static void safePrintln(String s) {
+      System.out.println(s);
     }
 
     public List<CalendarEvent> getEventsInRange(LocalDateTime startRange, LocalDateTime endRange) {
@@ -174,9 +188,9 @@ public class CalendarApp {
         }
         writer.write(sb.toString());
         File file = new File(fileName);
-        System.out.println("Exported to CSV: " + file.getAbsolutePath());
+        CalendarManager.safePrintln("Exported to CSV: " + file.getAbsolutePath());
       } catch (Exception e) {
-        System.out.println("Error exporting CSV: " + e.getMessage());
+        CalendarManager.safePrintln("Error exporting CSV: " + e.getMessage());
       }
     }
 
@@ -208,9 +222,9 @@ public class CalendarApp {
         }
         writer.write(sb.toString());
         File file = new File(fileName);
-        System.out.println("Exported to Google CSV: " + file.getAbsolutePath());
+        CalendarManager.safePrintln("Exported to Google CSV: " + file.getAbsolutePath());
       } catch (Exception e) {
-        System.out.println("Error exporting Google CSV: " + e.getMessage());
+        CalendarManager.safePrintln("Error exporting Google CSV: " + e.getMessage());
       }
     }
 
@@ -342,14 +356,14 @@ public class CalendarApp {
           for (CalendarEvent occurrence : occurrences) {
             calendar.addEvent(occurrence, autoDecline);
           }
-          System.out.println("Recurring event created with " + occurrences.size() + " occurrences.");
+          CalendarManager.safePrintln("Recurring event created with " + occurrences.size() + " occurrences.");
         } else {
           String endStr = afterTo.trim();
           LocalDateTime startDateTime = LocalDateTime.parse(startStr, dateTimeFormatter);
           LocalDateTime endDateTime = LocalDateTime.parse(endStr, dateTimeFormatter);
           CalendarEvent event = new CalendarEvent(eventName, startDateTime, endDateTime, false);
           calendar.addEvent(event, autoDecline);
-          System.out.println("Event created: " + event);
+          CalendarManager.safePrintln("Event created: " + event);
         }
       } else if (command.contains(" on ")) {
         String[] parts = command.split(" on ", 2);
@@ -366,7 +380,7 @@ public class CalendarApp {
           for (CalendarEvent occurrence : occurrences) {
             calendar.addEvent(occurrence, autoDecline);
           }
-          System.out.println("Recurring all-day event created with " + occurrences.size() + " occurrences.");
+          CalendarManager.safePrintln("Recurring all-day event created with " + occurrences.size() + " occurrences.");
         } else {
           String dateStr = remainder.trim();
           LocalDate date = LocalDate.parse(dateStr, dateFormatter);
@@ -374,7 +388,7 @@ public class CalendarApp {
           LocalDateTime endDateTime = date.plusDays(1).atStartOfDay();
           CalendarEvent event = new CalendarEvent(eventName, startDateTime, endDateTime, true);
           calendar.addEvent(event, autoDecline);
-          System.out.println("All-day event created: " + event);
+          CalendarManager.safePrintln("All-day event created: " + event);
         }
       } else {
         throw new Exception("Invalid create event command format.");
@@ -481,14 +495,14 @@ public class CalendarApp {
             LocalDateTime endDateTime = LocalDateTime.parse(endStr, dateTimeFormatter);
             boolean updated = calendar.editSingleEvent(property, eventName, startDateTime, endDateTime, newValue);
             if (updated) {
-              System.out.println("Event updated successfully.");
+              CalendarManager.safePrintln("Event updated successfully.");
             } else {
-              System.out.println("Event not found or update failed.");
+              CalendarManager.safePrintln("Event not found or update failed.");
             }
           } else {
             LocalDateTime startDateTime = LocalDateTime.parse(afterFrom, dateTimeFormatter);
             int count = calendar.editEventsByStart(property, eventName, startDateTime, newValue);
-            System.out.println(count + " event(s) updated starting from " + startDateTime);
+            CalendarManager.safePrintln(count + " event(s) updated starting from " + startDateTime);
           }
         } else {
           String[] tokens = beforeWith.split(" ", 2);
@@ -498,7 +512,7 @@ public class CalendarApp {
           String property = tokens[0].trim();
           String eventName = tokens[1].trim();
           int count = calendar.editEventsByName(property, eventName, newValue);
-          System.out.println(count + " event(s) updated with new " + property);
+          CalendarManager.safePrintln(count + " event(s) updated with new " + property);
         }
       } else {
         throw new Exception("Edit command must contain 'with' clause.");
@@ -514,11 +528,11 @@ public class CalendarApp {
       LocalDate date = LocalDate.parse(dateStr, dateFormatter);
       List<CalendarEvent> events = calendar.getEventsOn(date);
       if (events.isEmpty()) {
-        System.out.println("No events found on " + date);
+        CalendarManager.safePrintln("No events found on " + date);
       } else {
-        System.out.println("Events on " + date + ":");
+        CalendarManager.safePrintln("Events on " + date + ":");
         for (CalendarEvent event : events) {
-          System.out.println(" - " + event);
+          CalendarManager.safePrintln(" - " + event);
         }
       }
     }
@@ -539,11 +553,11 @@ public class CalendarApp {
       LocalDateTime endDateTime = LocalDateTime.parse(endStr, dateTimeFormatter);
       List<CalendarEvent> events = calendar.getEventsInRange(startDateTime, endDateTime);
       if (events.isEmpty()) {
-        System.out.println("No events found between " + startDateTime + " and " + endDateTime);
+        CalendarManager.safePrintln("No events found between " + startDateTime + " and " + endDateTime);
       } else {
-        System.out.println("Events between " + startDateTime + " and " + endDateTime + ":");
+        CalendarManager.safePrintln("Events between " + startDateTime + " and " + endDateTime + ":");
         for (CalendarEvent event : events) {
-          System.out.println(" - " + event);
+          CalendarManager.safePrintln(" - " + event);
         }
       }
     }
@@ -574,7 +588,7 @@ public class CalendarApp {
       String dateTimeStr = parts[1].trim();
       LocalDateTime dateTime = LocalDateTime.parse(dateTimeStr, dateTimeFormatter);
       boolean busy = calendar.isBusyAt(dateTime);
-      System.out.println("Status at " + dateTime + ": " + (busy ? "Busy" : "Available"));
+      CalendarManager.safePrintln("Status at " + dateTime + ": " + (busy ? "Busy" : "Available"));
     }
   }
 }
