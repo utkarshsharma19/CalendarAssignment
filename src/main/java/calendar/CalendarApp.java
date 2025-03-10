@@ -64,8 +64,7 @@ public class CalendarApp {
       System.out.println("Command error: " + e.getMessage());
     }
   }
-
-  // Represents a calendar event.
+  
   public static class CalendarEvent {
     public String eventName;
     public LocalDateTime start;
@@ -382,8 +381,9 @@ public class CalendarApp {
       }
     }
 
-    private static List<CalendarEvent> generateRecurringEvents(String eventName, LocalDateTime startDateTime,
-                                                               LocalDateTime endDateTime, String repeatPart, boolean isAllDay) throws Exception {
+    private static List<CalendarEvent> generateRecurringEvents(String eventName
+            , LocalDateTime startDateTime, LocalDateTime endDateTime, String repeatPart
+            , boolean isAllDay) throws Exception {
       List<CalendarEvent> occurrences = new ArrayList<>();
       String[] tokens = repeatPart.split(" ");
       String weekdaysStr = tokens[0].trim().toUpperCase();
@@ -401,7 +401,8 @@ public class CalendarApp {
         }
       }
       if (repeatPart.toLowerCase().contains(" for ")) {
-        if (tokens.length < 4 || !tokens[1].equalsIgnoreCase("for") || !tokens[3].equalsIgnoreCase("times")) {
+        if (tokens.length < 4 || !tokens[1].equalsIgnoreCase("for")
+                || !tokens[3].equalsIgnoreCase("times")) {
           throw new Exception("Invalid recurring event format (for N times).");
         }
         int occurrencesCount = Integer.parseInt(tokens[2]);
@@ -441,7 +442,8 @@ public class CalendarApp {
       return occurrences;
     }
 
-    private static void processEditCommand(String command, CalendarManager calendar, boolean plural) throws Exception {
+    private static void processEditCommand(String command, CalendarManager calendar,
+                                           boolean plural) throws Exception {
 
       String prefix = plural ? "edit events" : "edit event";
       String remainder = command.substring(prefix.length()).trim();
@@ -484,13 +486,11 @@ public class CalendarApp {
               System.out.println("Event not found or update failed.");
             }
           } else {
-            // Plural edit with "from": update all events with eventName starting at or after given date/time.
             LocalDateTime startDateTime = LocalDateTime.parse(afterFrom, dateTimeFormatter);
             int count = calendar.editEventsByStart(property, eventName, startDateTime, newValue);
             System.out.println(count + " event(s) updated starting from " + startDateTime);
           }
         } else {
-          // Plural edit without "from": update all events with the given eventName.
           String[] tokens = beforeWith.split(" ", 2);
           if (tokens.length < 2) {
             throw new Exception("Invalid edit command format.");
@@ -505,8 +505,6 @@ public class CalendarApp {
       }
     }
 
-    // Processes the command to print events on a specific date.
-    // Command pattern: print events on <date>
     private static void processPrintEventsOn(String command, CalendarManager calendar) throws Exception {
       String[] parts = command.split(" on ", 2);
       if (parts.length < 2) {
