@@ -33,6 +33,9 @@
                     <targetTests>
                         <param>*</param>
                     </targetTests>
+                    <targetClasses>
+                        <param>calendar.*</param>
+                    </targetClasses>
                 </configuration>
             </plugin>
         </plugins>
