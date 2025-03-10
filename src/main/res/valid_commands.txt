@@ -1,0 +1,12 @@
+create event --autoDecline Meeting from 2025-03-01T10:00 to 2025-03-01T11:00
+create event Workshop on 2025-03-02 repeats MTWRF for 3 times
+create event Seminar from 2025-03-03T09:00 to 2025-03-03T10:30 repeats WF until 2025-03-10T00:00
+edit event description Meeting from 2025-03-01T10:00 to 2025-03-01T11:00 with Discuss quarterly results
+edit events location Workshop from 2025-03-02T00:00 with Conference Room A
+edit events public Seminar with false
+print events on 2025-03-01
+print events from 2025-03-01T00:00 to 2025-03-05T00:00
+export cal events.csv
+export googlecsv events_google.csv
+show status on 2025-03-01T10:30
+exit
